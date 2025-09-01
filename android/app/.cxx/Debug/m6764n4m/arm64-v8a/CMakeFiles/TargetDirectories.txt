@@ -1,0 +1,2 @@
+C:/local app repo/vandizone/Vandizone-Driver-App/android/app/.cxx/Debug/m6764n4m/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/local app repo/vandizone/Vandizone-Driver-App/android/app/.cxx/Debug/m6764n4m/arm64-v8a/CMakeFiles/rebuild_cache.dir

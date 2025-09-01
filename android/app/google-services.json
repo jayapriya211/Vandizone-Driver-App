@@ -1,0 +1,131 @@
+{
+  "project_info": {
+    "project_number": "489979243792",
+    "firebase_url": "https://vandizone-admin-default-rtdb.firebaseio.com",
+    "project_id": "vandizone-admin",
+    "storage_bucket": "vandizone-admin.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489979243792:android:76c4579c3d3f4bbf14c995",
+        "android_client_info": {
+          "package_name": "com.vandizone.captainapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "489979243792-0f8v589q49goncp7edsbb2dukn5ip384.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vandizone.captainapp",
+            "certificate_hash": "471ede38035fb551f92a57040769d3cb7159ce59"
+          }
+        },
+        {
+          "client_id": "489979243792-eljvilcjcf3evoanesp6a8aob7gm72ee.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vandizone.captainapp",
+            "certificate_hash": "fcc8ca78ba4546ab2107b2b38f60f1aada91cdf6"
+          }
+        },
+        {
+          "client_id": "489979243792-l1fggbhs3ogslvetb0l64pv71u20fobp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vandizone.captainapp",
+            "certificate_hash": "26dbb353b77669ec7a2ace7b3ef524edc9ae5dd0"
+          }
+        },
+        {
+          "client_id": "489979243792-uvaodkbsa0pchfai1jeq3fpje2geodta.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vandizone.captainapp",
+            "certificate_hash": "088d90cee273a7c3434824c692922cae81877609"
+          }
+        },
+        {
+          "client_id": "489979243792-dik903j2led57s8l7sfbhv15c0a0ou08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFVzo09OqA0KYsUTL2hvmyFe22san6QKc"
+        },
+        {
+          "current_key": "AIzaSyBSNimDMlCsmvweMksbr9XbETS9E1R_KTQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "489979243792-dik903j2led57s8l7sfbhv15c0a0ou08.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:489979243792:android:7efeef7116ce319314c995",
+        "android_client_info": {
+          "package_name": "com.vandizone.customerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "489979243792-03usiaodh9a116jqehd27m095kk3sv5u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vandizone.customerapp",
+            "certificate_hash": "b00c1a8b2088fadd609c33b6427e314080746221"
+          }
+        },
+        {
+          "client_id": "489979243792-bd7o5tjsgl8sgdlhcjevmit9g1cp6ddf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vandizone.customerapp",
+            "certificate_hash": "fcc8ca78ba4546ab2107b2b38f60f1aada91cdf6"
+          }
+        },
+        {
+          "client_id": "489979243792-jpjdvo7vf9s4vjls1f8gni0fcdcssq0t.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vandizone.customerapp",
+            "certificate_hash": "088d90cee273a7c3434824c692922cae81877609"
+          }
+        },
+        {
+          "client_id": "489979243792-dik903j2led57s8l7sfbhv15c0a0ou08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFVzo09OqA0KYsUTL2hvmyFe22san6QKc"
+        },
+        {
+          "current_key": "AIzaSyBSNimDMlCsmvweMksbr9XbETS9E1R_KTQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "489979243792-dik903j2led57s8l7sfbhv15c0a0ou08.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

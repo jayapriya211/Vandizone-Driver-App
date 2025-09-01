@@ -1,0 +1,2 @@
+C:/vandizone/Driver App/rc_fl_cab_catch_driver/android/app/.cxx/RelWithDebInfo/465e4840/x86_64/CMakeFiles/edit_cache.dir
+C:/vandizone/Driver App/rc_fl_cab_catch_driver/android/app/.cxx/RelWithDebInfo/465e4840/x86_64/CMakeFiles/rebuild_cache.dir

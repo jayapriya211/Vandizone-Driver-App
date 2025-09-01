@@ -1,0 +1,20 @@
+{
+  "buildFiles": [
+    "/Users/umangdonda/Flutter/Flutter Install/Flutter 3.29.2/flutter/packages/flutter_tools/gradle/src/main/groovy/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/Users/umangdonda/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/Users/umangdonda/PixelNest/Flutter/07 CabCatch/Driver App/vandizone_caption/android/app/.cxx/RelWithDebInfo/4yx6q4z6/x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/Users/umangdonda/Library/Android/sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/Users/umangdonda/PixelNest/Flutter/07 CabCatch/Driver App/vandizone_caption/android/app/.cxx/RelWithDebInfo/4yx6q4z6/x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {}
+}
