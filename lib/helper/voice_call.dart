@@ -260,18 +260,18 @@ class _VoiceCallScreenState extends State<VoiceCallScreen>
             _startCallTimer();
           },
 
-            onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
-              print('👋 Remote user left: $remoteUid, reason: $reason');
+          onUserOffline: (RtcConnection connection, int remoteUid, UserOfflineReasonType reason) {
+            print('👋 Remote user left: $remoteUid, reason: $reason');
 
-              // Allow ending call in other states like connecting
-              if (_callState == CallState.connected || _callState == CallState.connecting || _callState == CallState.incoming) {
-                _endCall();
-              } else {
-                print('⚠️ Ignoring userOffline during $_callState');
-              }
-            },
+            // Allow ending call in other states like connecting
+            if (_callState == CallState.connected || _callState == CallState.connecting || _callState == CallState.incoming) {
+              _endCall();
+            } else {
+              print('⚠️ Ignoring userOffline during $_callState');
+            }
+          },
 
-            onConnectionStateChanged: (RtcConnection connection, ConnectionStateType state, ConnectionChangedReasonType reason) {
+          onConnectionStateChanged: (RtcConnection connection, ConnectionStateType state, ConnectionChangedReasonType reason) {
             print('🔗 Connection state changed: $state, reason: $reason');
 
             if (state == ConnectionStateType.connectionStateFailed) {
@@ -997,7 +997,7 @@ class CallNotificationManager {
           importance: Importance.max,
           priority: Priority.high,
           playSound: true,
-          sound: RawResourceAndroidNotificationSound('notification'),
+          sound: RawResourceAndroidNotificationSound('phone_ring'),
           fullScreenIntent: true,
           category: AndroidNotificationCategory.call,
           icon: '@mipmap/ic_launcher',

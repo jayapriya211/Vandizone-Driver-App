@@ -74,7 +74,7 @@ class _VehicleListViewState extends State<VehicleListView>
           payload: data['payload']?.toString() ?? '',
           gcw: data['gcw']?.toString() ?? '',
           truckDimensions: data['dimensions']?.toString() ?? '',
-          isActive: data['status'] == 1,
+          isActive: data['status'] == 0,
           assignedCaptains: _parseCaptains(data['assignCaptains']),
           imageUrl: data['vehiclePhotoUrl'] ?? AssetImages.pastride1,
           vehicleCode: data['truckcode'] ?? '',
@@ -107,7 +107,7 @@ class _VehicleListViewState extends State<VehicleListView>
           payload: data['payload']?.toString() ?? '',
           gcw: data['gcw']?.toString() ?? '',
           truckDimensions: data['dimensions']?.toString() ?? '',
-          isActive: data['status'] == 1,
+          isActive: data['status'] == 0,
           assignedCaptains: _parseCaptains(data['assignCaptains']),
           imageUrl: data['vehiclePhotoUrl'] ?? AssetImages.pastride1,
           vehicleCode: data['bhlcode'] ?? '',
@@ -214,7 +214,7 @@ class _VehicleListViewState extends State<VehicleListView>
     try {
       final collection = vehicle.isTruck ? 'trucks' : 'bhl';
       await _firestore.collection(collection).doc(vehicle.id).update({
-        'status': newStatus ? 1 : 0,
+        'status': newStatus ? 0 : 1,
         'updated_at': FieldValue.serverTimestamp(),
       });
 

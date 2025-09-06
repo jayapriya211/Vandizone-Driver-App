@@ -156,7 +156,7 @@ class Vehicle {
       payload: map['payload']?.toString() ?? '',
       gcw: map['gcw']?.toString() ?? '',
       truckDimensions: map['truckDimensions']?.toString() ?? '',
-      isActive: map['isActive'] ?? true,
+      isActive: (map['status'] ?? 1) == 0,
       assignedCaptains: (map['assignedCaptains'] as List?)?.map((e) => Captain.fromMap(e)).toList(),
       imageUrl: map['imageUrl']?.toString() ?? '',
       vehicleCode: map['vehicleCode']?.toString() ?? '',

@@ -85,7 +85,7 @@ const AndroidNotificationChannel callChannel = AndroidNotificationChannel(
   description: 'Incoming voice calls',
   importance: Importance.max,
   playSound: true,
-  sound: RawResourceAndroidNotificationSound('notification'),
+  sound: RawResourceAndroidNotificationSound('phone_ring'),
 );
 
 const AndroidNotificationChannel fcmChannel = AndroidNotificationChannel(
@@ -94,7 +94,7 @@ const AndroidNotificationChannel fcmChannel = AndroidNotificationChannel(
   description: 'General FCM Notifications',
   importance: Importance.high,
   playSound: true,
-  sound: RawResourceAndroidNotificationSound('notification'),
+  sound: RawResourceAndroidNotificationSound('phone_ring'),
 );
 
 Future<void> initializeNotifications() async {
@@ -241,7 +241,7 @@ Future<void> _showIncomingCallNotification(RemoteMessage message) async {
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
-      sound: RawResourceAndroidNotificationSound('notification'),
+      sound: RawResourceAndroidNotificationSound('phone_ring'),
       fullScreenIntent: true,
       category: AndroidNotificationCategory.call,
       icon: '@mipmap/ic_launcher',
@@ -303,7 +303,7 @@ Future<void> _showNotification(RemoteMessage message) async {
       channelDescription: fcmChannel.description,
       importance: fcmChannel.importance,
       playSound: true,
-      sound: RawResourceAndroidNotificationSound('notification'),
+      sound: RawResourceAndroidNotificationSound('phone_ring'),
       icon: '@mipmap/ic_launcher',
       color: Colors.blue,
       priority: Priority.high,

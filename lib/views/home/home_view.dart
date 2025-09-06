@@ -842,6 +842,23 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                       ],
                                     ),
                                     SizedBox(height: 10),
+                                    if (bookingData['taxes'] != null && bookingData['taxes'] is List) ...[
+                                      SizedBox(height: 10),
+                                      Text("Taxes", style: blackMedium18),
+                                      SizedBox(height: 8),
+                                      Column(
+                                        children: (bookingData['taxes'] as List<dynamic>).map((tax) {
+                                          final taxMap = tax as Map<String, dynamic>;
+                                          return Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text("${taxMap['name']} (${taxMap['value']}%)", style: blackMedium18),
+                                              Text("₹${taxMap['amount']}", style: primarySemiBold16),
+                                            ],
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
                                     Divider(),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

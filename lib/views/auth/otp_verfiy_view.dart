@@ -640,6 +640,11 @@ class _OtpVerfiyViewState extends State<OtpVerfiyView> {
           'district': userData['district'],
           'fcmToken': fcmToken,
           'createdAt': FieldValue.serverTimestamp(),
+          'bankName': userData['bankName'] ?? "",
+          'branchName': userData['branchName'] ?? "",
+          'accountNumber': userData['accountNumber'] ?? "",
+          'ifscCode': userData['ifscCode'] ?? "",
+          'accountHolderName': userData['accountHolderName'] ?? "",
         });
 
         await FirebaseFirestore.instance.collection('temp_registrations').doc(mobileNumber).delete();

@@ -160,6 +160,14 @@ class _SignUpViewState extends State<SignUpView> {
       if (selectedRole == 0 && selfieImage == null) {
         throw 'Please upload your selfie';
       }
+      if (selectedRole == 1) {
+        if (bankNameController.text.isEmpty ||
+            branchNameController.text.isEmpty ||
+            accountNumberController.text.isEmpty ||
+            ifscController.text.isEmpty) {
+          throw 'Please fill all bank details';
+        }
+      }
 
       final prefs = await SharedPreferences.getInstance();
       final String userRole = selectedRole == 0 ? 'captain' : 'owner';
@@ -194,8 +202,11 @@ class _SignUpViewState extends State<SignUpView> {
           'bankName': bankNameController.text,
           'branchName': branchNameController.text,
           'accountNumber': accountNumberController.text,
-          'ifscCode': ifscController.text
-        }
+          'ifscCode': ifscController.text,
+          'accountHolderName': accountHolderController.text.isNotEmpty
+              ? accountHolderController.text
+              : nameController.text, // Use name if account holder not specified
+        },
       };
 
       await FirebaseFirestore.instance
@@ -509,8 +520,8 @@ class _SignUpViewState extends State<SignUpView> {
                               Gap(15),
                               MyTextfield(header: 'IFSC Code', controller: ifscController),
                               Gap(15),
-                              // MyTextfield(header: 'Account Holder Name', controller: accountHolderController),
-                              // Gap(15),
+                              MyTextfield(header: 'Account Holder Name', controller: accountHolderController),
+                              Gap(15),
                               // MyDropdownField<String>(
                               //   header: "Permit me to Access",
                               //   value: selectedPermitAccess,
