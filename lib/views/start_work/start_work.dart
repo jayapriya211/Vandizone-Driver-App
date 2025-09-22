@@ -222,15 +222,32 @@ class _StartWorkViewState extends State<StartWorkView> {
         _selectedPaymentMode = data?['paymentMethod'] ?? '';
         _isOtpVerifiedStart = data?['startOtpVerified'] ?? false;
         _isOtpVerifiedEnd = data?['endOtpVerified'] ?? false;
+        // final Timestamp? startTimestamp = data?['workStartedAt'];
+        // if (startTimestamp != null) {
+        //   _overallStartTime = startTimestamp.toDate();
+        //   final now = DateTime.now();
+        //   _totalWorkDuration = now.difference(_overallStartTime!);
+        //
+        //   // Optionally restart the timer to keep incrementing
+        //   _startWorkTimer();
+        // }
         final Timestamp? startTimestamp = data?['workStartedAt'];
+        final Timestamp? endTimestamp = data?['workEndedAt'];
+
         if (startTimestamp != null) {
           _overallStartTime = startTimestamp.toDate();
-          final now = DateTime.now();
-          _totalWorkDuration = now.difference(_overallStartTime!);
-
-          // Optionally restart the timer to keep incrementing
-          _startWorkTimer();
+          if (endTimestamp != null) {
+            // Work has ended → calculate total once and stop
+            _overallEndTime = endTimestamp.toDate();
+            _totalWorkDuration = _overallEndTime!.difference(_overallStartTime!);
+          } else {
+            // Work still in progress → keep timer running
+            final now = DateTime.now();
+            _totalWorkDuration = now.difference(_overallStartTime!);
+            _startWorkTimer();
+          }
         }
+
       });
     }
   }
@@ -1475,10 +1492,16 @@ class _StartWorkViewState extends State<StartWorkView> {
   }
 
   void _stopWorkAndSave() async {
-    _workTimer?.cancel();
+    // _workTimer?.cancel();
+    setState(() {
+      _workTimer?.cancel(); // Stop the periodic timer
+      _overallEndTime = DateTime.now(); // Final end time
+      isWorking = false;
+      isOnBreak = false;
+    });
     if (isOnBreak) _resumeWork(); // End break if active
 
-    _overallEndTime = DateTime.now();
+    // _overallEndTime = DateTime.now();
     final bookingId = widget.bookingData?['vehicleDetails']['currentBooking'];
     if (bookingId == null) return;
 
@@ -2176,99 +2199,99 @@ class _StartWorkViewState extends State<StartWorkView> {
     );
   }
 
-  void _showPaymentModeBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Select Payment Mode',
-                    style: TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-
-                  TextField(
-                    controller: _tipController,
-                    keyboardType:
-                    TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Optional Tip Amount (₹)',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // Radio buttons for payment modes
-                  Column(
-                    children: _paymentModes.map((mode) {
-                      return RadioListTile<String>(
-                        title: Text(mode),
-                        value: mode,
-                        groupValue: _selectedPaymentMode,
-                        onChanged: (String? value) {
-                          setState(() {
-                            _selectedPaymentMode = value!;
-                          });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                      );
-                    }).toList(),
-                  ),
-                  SizedBox(height: 20),
-
-                  // ⚠️ Note for cash payments
-                  if (_selectedPaymentMode == 'Cash On Site') ...[
-                    Text(
-                      'Note: Vandizone is not responsible for any money collected as cash.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                  ],
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primary,
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                    onPressed: () async {
-                      if (_selectedPaymentMode == 'Cash On Site') {
-                        // await _handlePaymentAndCommission();
-                        await _handlePaymentAndCommission();
-                        Navigator.pop(context); // Close bottom sheet
-                        UiHelper.showTripCompletedDialog(context);
-
-                      } else {
-                        Navigator.pop(context); // Close the bottom sheet first
-                        _openRazorpayPayment(); // Then open Razorpay
-                      }
-                    },
-                    child: Text(
-                      _selectedPaymentMode == 'Cash On Site'
-                          ? 'Confirm Payment'
-                          : 'Confirm Payment',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  // void _showPaymentModeBottomSheet(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (context) {
+  //       return StatefulBuilder(
+  //         builder: (BuildContext context, StateSetter setState) {
+  //           return Padding(
+  //             padding: const EdgeInsets.all(20.0),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   'Select Payment Mode',
+  //                   style: TextStyle(
+  //                       fontSize: 18, fontWeight: FontWeight.bold),
+  //                 ),
+  //                 SizedBox(height: 20),
+  //
+  //                 TextField(
+  //                   controller: _tipController,
+  //                   keyboardType:
+  //                   TextInputType.numberWithOptions(decimal: true),
+  //                   decoration: InputDecoration(
+  //                     labelText: 'Optional Tip Amount (₹)',
+  //                     border: OutlineInputBorder(),
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 16),
+  //
+  //                 // Radio buttons for payment modes
+  //                 Column(
+  //                   children: _paymentModes.map((mode) {
+  //                     return RadioListTile<String>(
+  //                       title: Text(mode),
+  //                       value: mode,
+  //                       groupValue: _selectedPaymentMode,
+  //                       onChanged: (String? value) {
+  //                         setState(() {
+  //                           _selectedPaymentMode = value!;
+  //                         });
+  //                       },
+  //                       contentPadding: EdgeInsets.zero,
+  //                     );
+  //                   }).toList(),
+  //                 ),
+  //                 SizedBox(height: 20),
+  //
+  //                 // ⚠️ Note for cash payments
+  //                 if (_selectedPaymentMode == 'Cash On Site') ...[
+  //                   Text(
+  //                     'Note: Vandizone is not responsible for any money collected as cash.',
+  //                     style: TextStyle(
+  //                       fontSize: 13,
+  //                       color: Colors.grey[600],
+  //                     ),
+  //                   ),
+  //                   SizedBox(height: 12),
+  //                 ],
+  //
+  //                 ElevatedButton(
+  //                   style: ElevatedButton.styleFrom(
+  //                     backgroundColor: primary,
+  //                     minimumSize: Size(double.infinity, 50),
+  //                   ),
+  //                   onPressed: () async {
+  //                     if (_selectedPaymentMode == 'Cash On Site') {
+  //                       // await _handlePaymentAndCommission();
+  //                       await _handlePaymentAndCommission();
+  //                       Navigator.pop(context); // Close bottom sheet
+  //                       UiHelper.showTripCompletedDialog(context);
+  //
+  //                     } else {
+  //                       Navigator.pop(context); // Close the bottom sheet first
+  //                       _handleOnlinePaymentCompletion(); // Then open Razorpay
+  //                     }
+  //                   },
+  //                   child: Text(
+  //                     _selectedPaymentMode == 'Cash On Site'
+  //                         ? 'Confirm Payment'
+  //                         : 'Confirm Payment',
+  //                     style: TextStyle(color: Colors.white, fontSize: 16),
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 10),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
 
 
   Future<void> pickImage() async {
@@ -2320,6 +2343,13 @@ class _StartWorkViewState extends State<StartWorkView> {
       // Show success message
       _showSuccessSnackbar('Image uploaded successfully');
       _loadExistingImage();
+      await sendCustomerBookingNotification(
+        collection: 'bhl_bookings', // 👈 If always truck, change to 'truck_bookings'
+        bookingCode: bookingId,
+        eventType: 'booking_started',
+        title: 'Reached Site',
+        body: 'Captain has reached the site.',
+      );
     } catch (e) {
       print('Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -2548,8 +2578,8 @@ class _StartWorkViewState extends State<StartWorkView> {
         final bookingRef = firestore.collection('bhl_bookings').doc(bookingId);
         transaction.update(bookingRef, {
           'status': 5,
-          "tip":tip,
-          'paymentStatus': 'paid',
+          // "tip":tip,
+          // 'paymentStatus': 'paid',
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
@@ -2614,8 +2644,8 @@ class _StartWorkViewState extends State<StartWorkView> {
         final bookingRef = firestore.collection('bhl_bookings').doc(bookingId);
         transaction.update(bookingRef, {
           'status': 5,
-          'paymentStatus': 'paid',
-          "tip":tip,
+          // 'paymentStatus': 'paid',
+          // "tip":tip,
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
@@ -2664,6 +2694,119 @@ class _StartWorkViewState extends State<StartWorkView> {
 
     } catch (e, stackTrace) {
       debugPrint('[ERROR] Failed to complete online payment: $e');
+      debugPrint('Stack trace: $stackTrace');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
+  void _showPaymentModeBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "Has the customer completed the payment?",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context, false); // Cancel
+                      },
+                      child: Text("Cancel"),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      onPressed: () {
+                        _updatePaymentStatus();
+                        Navigator.pop(context, true); // Confirm
+                      },
+                      child: Text("Confirm"),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _updatePaymentStatus() async {
+    try {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      if (widget.bookingData == null) {
+        throw Exception("Invalid booking data");
+      }
+
+      final bookingId = widget.bookingData?['vehicleDetails']['currentBooking'];
+      if (bookingId == null) {
+        throw Exception("Booking reference not found");
+      }
+
+      final tip = double.tryParse(_tipController.text.trim()) ?? 0.0;
+
+      await firestore.runTransaction((transaction) async {
+        // Update booking
+        final bookingRef = firestore.collection('bhl_bookings').doc(bookingId);
+        transaction.update(bookingRef, {
+          'status': 5,
+          // 'tip': tip,
+          // 'paymentStatus': 'paid',
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Update truck
+        final truckQuery = await firestore.collection('bhl')
+            .where('currentBooking', isEqualTo: bookingId)
+            .limit(1)
+            .get();
+
+        if (truckQuery.docs.isNotEmpty) {
+          final truckRef = firestore.collection('bhl').doc(truckQuery.docs.first.id);
+          transaction.update(truckRef, {
+            'status': 0,
+            'currentBooking': FieldValue.delete(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      });
+
+      debugPrint('[PAYMENT] Payment completed successfully. Booking: $bookingId');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment processed and status updated successfully')),
+      );
+
+      Navigator.pop(context, true); // Close sheet
+      _showRatingDialog(context);
+
+    } catch (e, stackTrace) {
+      debugPrint('[ERROR] Failed to update payment: $e');
       debugPrint('Stack trace: $stackTrace');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),

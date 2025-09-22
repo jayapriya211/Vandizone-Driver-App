@@ -22,7 +22,7 @@ class RideDetailView extends StatefulWidget {
   State<RideDetailView> createState() => _RideDetailViewState();
 }
 
-List _imageList = [AssetImages.yellowcar, AssetImages.youhere];
+List _imageList = [AssetImages.pastride1, AssetImages.youhere];
 final List<Marker> _markers = [];
 final List<LatLng> _latlng = [
   const LatLng(37.776482, -122.416988),

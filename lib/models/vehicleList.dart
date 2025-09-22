@@ -158,7 +158,7 @@ class Vehicle {
       truckDimensions: map['truckDimensions']?.toString() ?? '',
       isActive: (map['status'] ?? 1) == 0,
       assignedCaptains: (map['assignedCaptains'] as List?)?.map((e) => Captain.fromMap(e)).toList(),
-      imageUrl: map['imageUrl']?.toString() ?? '',
+      imageUrl: map['vehiclePhotoUrl']?.toString() ?? '',
       vehicleCode: map['vehicleCode']?.toString() ?? '',
       rcUrl: map['rcUrl']?.toString() ?? '',
       insuranceUrl: map['insuranceUrl']?.toString() ?? '',

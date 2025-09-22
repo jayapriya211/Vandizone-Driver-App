@@ -191,7 +191,7 @@ class _RideTrackingViewState extends State<RideTrackingView> {
     // Load source marker icon
     final sourceIcon = await getBytesFromAssets(AssetImages.youhere, 65);
     // Load destination marker icon
-    final destIcon = await getBytesFromAssets(AssetImages.yellowcar, 55);
+    final destIcon = await getBytesFromAssets(AssetImages.pastride1, 55);
 
     setState(() {
       _markerIcons.addAll([sourceIcon, destIcon]);

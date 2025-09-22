@@ -39,7 +39,7 @@ class VehicleDetailsPage extends StatelessWidget {
                 const Gap(10),
                 _infoPairRow('Body Type', vehicle.bodyType, 'Color', vehicle.color),
                 const Gap(10),
-                _infoPairRow('Year', vehicle.year.toString(), 'Status', !vehicle.isActive ? 'Active' : 'Inactive'),
+                _infoPairRow('Year', vehicle.year.toString(), 'Status', vehicle.isActive ? 'Active' : 'Inactive'),
                 const Gap(10),
                 _infoPairRow('Vehicle Code', vehicle.vehicleCode, 'Registration District', vehicle.registeringDistrict),
               ],

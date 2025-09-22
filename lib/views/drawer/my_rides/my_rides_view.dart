@@ -79,7 +79,7 @@ class _MyRidesViewState extends State<MyRidesView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this); // Changed to 6 tabs
+    _tabController = TabController(length: 4, vsync: this); // Changed to 6 tabs
     _loadBookings().then((_) {
       _printAllData();
     });
@@ -415,9 +415,29 @@ Gross Profit: ${ride.grossProfit}
       onTap: () {
         if (item.status == 4 || item.status == 8) {
           if (item.vehicleType == 'Truck') {
-            Navigator.pushNamed(context, Routes.rideTrackingTruck);
+            // Navigator.pushNamed(context, Routes.rideTrackingTruck);
+            Navigator.pushNamed(
+              context,
+              Routes.rideTrackingTruck,
+              arguments: {
+                'bookingId': item.id, // ✅ bookingCode is stored in id
+                'bookingRef': FirebaseFirestore.instance
+                    .collection('truck_bookings')
+                    .doc(item.id),
+              },
+            );
           } else {
-            Navigator.pushNamed(context, Routes.rideTracking); // Assuming this is for BHL
+            // Navigator.pushNamed(context, Routes.rideTracking); // Assuming this is for BHL
+            Navigator.pushNamed(
+              context,
+              Routes.rideTracking,
+              arguments: {
+                'bookingId': item.id, // ✅ pass bookingId
+                'bookingRef': FirebaseFirestore.instance
+                    .collection('bhl_bookings')
+                    .doc(item.id), // optional if you need docRef
+              },
+            );
           }
         }
       },

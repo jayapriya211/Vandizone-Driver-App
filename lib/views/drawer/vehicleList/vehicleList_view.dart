@@ -167,6 +167,48 @@ class _VehicleListViewState extends State<VehicleListView>
     }
   }
 
+  // Future<void> _fetchCaptains() async {
+  //   if (_ownerId == null) return;
+  //
+  //   try {
+  //     setState(() => _isLoading = true);
+  //
+  //     final querySnapshot = await _firestore
+  //         .collection('my_captains')
+  //         .where('ownerId', isEqualTo: _ownerId)
+  //         .get();
+  //
+  //     final captains = await Future.wait(querySnapshot.docs.map((doc) async {
+  //       final captainDoc = await _firestore
+  //           .collection('captains')
+  //           .doc(doc['captainId'])
+  //           .get();
+  //
+  //       if (captainDoc.exists) {
+  //         return Captain(
+  //           name: captainDoc['name'] ?? 'Unknown',
+  //           id: captainDoc['userCode'] ?? 'Unknown',
+  //           phone: captainDoc['mobile'] ?? 'Unknown',
+  //           // email: captainDoc['email'],
+  //           imageUrl: captainDoc['profileImage'],
+  //           captainId: doc.id,
+  //           isAssigned: doc['is_assign'] ?? false,
+  //         );
+  //       }
+  //       return null;
+  //     }));
+  //
+  //     setState(() {
+  //       _availableCaptains = captains.whereType<Captain>().toList();
+  //     });
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(content: Text('Error fetching captains: $e')),
+  //     );
+  //   } finally {
+  //     setState(() => _isLoading = false);
+  //   }
+  // }
   Future<void> _fetchCaptains() async {
     if (_ownerId == null) return;
 
@@ -185,14 +227,16 @@ class _VehicleListViewState extends State<VehicleListView>
             .get();
 
         if (captainDoc.exists) {
+          final isAssigned = captainDoc['is_assign'] ?? false;
+          if (isAssigned) return null; // 🚫 skip already assigned captains
+
           return Captain(
             name: captainDoc['name'] ?? 'Unknown',
             id: captainDoc['userCode'] ?? 'Unknown',
             phone: captainDoc['mobile'] ?? 'Unknown',
-            // email: captainDoc['email'],
             imageUrl: captainDoc['profileImage'],
             captainId: doc.id,
-            isAssigned: doc['is_assign'] ?? false,
+            isAssigned: isAssigned,
           );
         }
         return null;
@@ -228,12 +272,51 @@ class _VehicleListViewState extends State<VehicleListView>
     }
   }
 
+  Future<void> _removeCaptainFromOtherVehicles(String captainId) async {
+    try {
+      // Collections to check
+      final collections = ['trucks', 'bhl'];
+
+      for (final collection in collections) {
+        final query = await _firestore
+            .collection(collection)
+            .where('assignCaptains', arrayContainsAny: [
+          {'id': captainId} // simplified check
+        ])
+            .get();
+
+        for (final doc in query.docs) {
+          final data = doc.data();
+          final List<dynamic> assignCaptains = data['assignCaptains'] ?? [];
+
+          // Filter out this captain
+          final updatedCaptains =
+          assignCaptains.where((c) => c['id'] != captainId).toList();
+
+          await _firestore.collection(collection).doc(doc.id).update({
+            'assignCaptains': updatedCaptains,
+            'updated_at': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Error removing captain from previous vehicles: $e");
+    }
+  }
+
+
   Future<void> _assignMultipleCaptains(Vehicle vehicle, List<Captain> captains) async {
     try {
       setState(() => _isAddingCaptain = true);
 
       final collection = vehicle.isTruck ? 'trucks' : 'bhl';
       final assignData = captains.map((c) => c.toMap()).toList();
+
+      for (final captain in captains) {
+        // 🔥 remove from any previously assigned vehicle
+        await _removeCaptainFromOtherVehicles(captain.id);
+      }
+
 
       // Update vehicle document
       await _firestore.collection(collection).doc(vehicle.id).update({
@@ -307,12 +390,34 @@ class _VehicleListViewState extends State<VehicleListView>
       setState(() => _isLoading = true);
 
       final collection = vehicle.isTruck ? 'trucks' : 'bhl';
-
+      final docRef = _firestore.collection(collection).doc(vehicle.id);
       // Remove from vehicle
-      await _firestore.collection(collection).doc(vehicle.id).update({
-        'assignCaptains': FieldValue.arrayRemove([captain.toMap()]),
-        'updated_at': FieldValue.serverTimestamp(),
-      });
+      // await _firestore.collection(collection).doc(vehicle.id).update({
+      //   'assignCaptains': FieldValue.arrayRemove([captain.toMap()]),
+      //   'updated_at': FieldValue.serverTimestamp(),
+      // });
+      final vehicleDoc = await docRef.get();
+      if (vehicleDoc.exists) {
+        final data = vehicleDoc.data()!;
+        final List<dynamic> captains = List.from(data['assignCaptains'] ?? []);
+
+        // Remove by id match
+        captains.removeWhere((c) => c['id'] == captain.id);
+
+        if (captains.isEmpty) {
+          // 🚨 Delete the field if no captains left
+          await docRef.update({
+            'assignCaptains': FieldValue.delete(),
+            'updated_at': FieldValue.serverTimestamp(),
+          });
+        } else {
+          // ✅ Update normally if captains remain
+          await docRef.update({
+            'assignCaptains': captains,
+            'updated_at': FieldValue.serverTimestamp(),
+          });
+        }
+      }
 
       // Update captain status
       final captainQuery = await _firestore
@@ -352,6 +457,7 @@ class _VehicleListViewState extends State<VehicleListView>
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Captain removed successfully')),
       );
+      await _fetchCaptains();
     } catch (e) {
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -411,6 +517,9 @@ class _VehicleListViewState extends State<VehicleListView>
                       MyTextfield(
                         header: 'Search Captains',
                         controller: searchController,
+                        inputFormatters: [
+                          UpperCaseTextFormatter(),
+                        ],
                         onChanged: (value) async {
                           if (value.length >= 3) {
                             try {
@@ -429,8 +538,9 @@ class _VehicleListViewState extends State<VehicleListView>
                                   email: data['email'] ?? '',
                                   captainId: doc.id,
                                   imageUrl: data['profileImage'] ?? '',
+                                  isAssigned: data['is_assign'] ?? false,
                                 );
-                              }).toList();
+                              }).where((c) => c.isAssigned == false).toList();
 
                               setState(() {
                                 filteredCaptains = fetchedCaptains;
@@ -523,6 +633,7 @@ class _VehicleListViewState extends State<VehicleListView>
                                 }
 
                                 await _assignMultipleCaptains(vehicle, selectedCaptains);
+                                await _fetchCaptains();
                                 Navigator.pop(context);
                               },
                             ),

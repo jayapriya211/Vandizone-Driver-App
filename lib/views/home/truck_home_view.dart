@@ -911,7 +911,7 @@ class _TruckHomePageState extends State<TruckHomePage> with TickerProviderStateM
           final position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high,
           );
-          await _updateBhlLocation(position);
+          await _updateTruckLocation(position);
         }
       }
 
@@ -934,43 +934,47 @@ class _TruckHomePageState extends State<TruckHomePage> with TickerProviderStateM
       debugPrint('[UI] Reverted online status due to error');
     }
   }
+  Future<void> _updateTruckLocation(Position position) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return;
 
-  // Future<void> _updateBhlLocation(Position position) async {
-  //   try {
-  //     final user = _auth.currentUser;
-  //     if (user == null) return;
-  //
-  //     final userCode = await _getUserCode(user.uid);
-  //     if (userCode == null) return;
-  //
-  //     final querySnapshot = await _firestore.collection('bhl').get();
-  //
-  //     final matchedDoc = querySnapshot.docs.firstWhereOrNull((doc) {
-  //       final data = doc.data();
-  //       if (!data.containsKey('assignCaptains')) return false;
-  //
-  //       final assignCaptains = List<Map<String, dynamic>>.from(data['assignCaptains']);
-  //       debugPrint('[CHECK] Truck ${doc.id} captains: $assignCaptains');
-  //
-  //       return assignCaptains.any((c) {
-  //         debugPrint('[CHECK] Comparing captain id=${c['id']} with userCode=$userCode');
-  //         return c['id'].toString().trim() == userCode.toString().trim();
-  //       });
-  //     });
-  //
-  //     if (matchedDoc != null) {
-  //       await _firestore.collection('trucks').doc(matchedDoc.id).update({
-  //         'lat': position.latitude,
-  //         'lng': position.longitude,
-  //         'updated_at': FieldValue.serverTimestamp(),
-  //       });
-  //
-  //       debugPrint('[LOCATION] Trucks location updated: ${position.latitude}, ${position.longitude}');
-  //     }
-  //   } catch (e) {
-  //     debugPrint('[ERROR] Failed to update BHL location: $e');
-  //   }
-  // }
+      final userCode = await _getUserCode(user.uid);
+      if (userCode == null) return;
+
+      // 🔎 Look only in trucks collection
+      final querySnapshot = await _firestore.collection('trucks').get();
+
+      final matchedDoc = querySnapshot.docs.firstWhereOrNull((doc) {
+        final data = doc.data();
+        if (!data.containsKey('assignCaptains')) return false;
+
+        final assignCaptains =
+        List<Map<String, dynamic>>.from(data['assignCaptains']);
+        debugPrint('[CHECK] Truck ${doc.id} captains: $assignCaptains');
+
+        return assignCaptains.any((c) {
+          debugPrint('[CHECK] Comparing captain id=${c['id']} with userCode=$userCode');
+          return c['id'].toString().trim() == userCode.toString().trim();
+        });
+      });
+
+      if (matchedDoc != null) {
+        await _firestore.collection('trucks').doc(matchedDoc.id).update({
+          'lat': position.latitude,
+          'lng': position.longitude,
+          'updated_at': FieldValue.serverTimestamp(),
+        });
+
+        debugPrint('[LOCATION] Truck location updated: ${position.latitude}, ${position.longitude}');
+      } else {
+        debugPrint('[WARNING] No truck found for captain $userCode');
+      }
+    } catch (e) {
+      debugPrint('[ERROR] Failed to update Truck location: $e');
+    }
+  }
+
   Future<void> _updateBhlLocation(Position position) async {
     try {
       final user = _auth.currentUser;
@@ -979,7 +983,7 @@ class _TruckHomePageState extends State<TruckHomePage> with TickerProviderStateM
       final userCode = await _getUserCode(user.uid);
       if (userCode == null) return;
 
-      final querySnapshot = await _firestore.collection('trucks').get();
+      final querySnapshot = await _firestore.collection('bhl').get();
 
       final matchedDoc = querySnapshot.docs.firstWhereOrNull((doc) {
         final data = doc.data();
@@ -995,20 +999,56 @@ class _TruckHomePageState extends State<TruckHomePage> with TickerProviderStateM
       });
 
       if (matchedDoc != null) {
-        await matchedDoc.reference.update({
+        await _firestore.collection('trucks').doc(matchedDoc.id).update({
           'lat': position.latitude,
           'lng': position.longitude,
           'updated_at': FieldValue.serverTimestamp(),
         });
 
-        debugPrint('[LOCATION] ✅ Truck ${matchedDoc.id} location updated: ${position.latitude}, ${position.longitude}');
-      } else {
-        debugPrint('[LOCATION] ❌ No truck found for userCode=$userCode');
+        debugPrint('[LOCATION] Trucks location updated: ${position.latitude}, ${position.longitude}');
       }
     } catch (e) {
-      debugPrint('[ERROR] Failed to update truck location: $e');
+      debugPrint('[ERROR] Failed to update BHL location: $e');
     }
   }
+  // Future<void> _updateBhlLocation(Position position) async {
+  //   try {
+  //     final user = _auth.currentUser;
+  //     if (user == null) return;
+  //
+  //     final userCode = await _getUserCode(user.uid);
+  //     if (userCode == null) return;
+  //
+  //     final querySnapshot = await _firestore.collection('trucks').get();
+  //
+  //     final matchedDoc = querySnapshot.docs.firstWhereOrNull((doc) {
+  //       final data = doc.data();
+  //       if (!data.containsKey('assignCaptains')) return false;
+  //
+  //       final assignCaptains = List<Map<String, dynamic>>.from(data['assignCaptains']);
+  //       debugPrint('[CHECK] Truck ${doc.id} captains: $assignCaptains');
+  //
+  //       return assignCaptains.any((c) {
+  //         debugPrint('[CHECK] Comparing captain id=${c['id']} with userCode=$userCode');
+  //         return c['id'].toString().trim() == userCode.toString().trim();
+  //       });
+  //     });
+  //
+  //     if (matchedDoc != null) {
+  //       await matchedDoc.reference.update({
+  //         'lat': position.latitude,
+  //         'lng': position.longitude,
+  //         'updated_at': FieldValue.serverTimestamp(),
+  //       });
+  //
+  //       debugPrint('[LOCATION] ✅ Truck ${matchedDoc.id} location updated: ${position.latitude}, ${position.longitude}');
+  //     } else {
+  //       debugPrint('[LOCATION] ❌ No truck found for userCode=$userCode');
+  //     }
+  //   } catch (e) {
+  //     debugPrint('[ERROR] Failed to update truck location: $e');
+  //   }
+  // }
 
 
   void _restartTruckBookingListenerIfNeeded() {

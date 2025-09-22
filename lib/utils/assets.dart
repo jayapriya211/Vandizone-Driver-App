@@ -1,7 +1,7 @@
 class AssetImages {
 	static const String authbg = 'assets/images/authBG.png';
 	static const String bellicon = 'assets/images/bellIcon.png';
-	static const String cab = 'assets/images/cab.png';
+	// static const String cab = 'assets/images/cab.png';
 	static const String calendar = 'assets/images/calendar.png';
 	static const String call = 'assets/images/call.png';
 	static const String callend = 'assets/images/callEnd.png';
@@ -41,7 +41,7 @@ class AssetImages {
 	static const String option1 = 'assets/images/option1.png';
 	static const String option2 = 'assets/images/option2.png';
 	static const String option3 = 'assets/images/option3.png';
-	static const String pastride1 = 'assets/images/pastRide1.png';
+	static const String pastride1 = 'assets/images/jcb.jpg';
 	static const String pastride2 = 'assets/images/pastRide2.png';
 	static const String pastride3 = 'assets/images/pastRide3.png';
 	static const String pastride4 = 'assets/images/pastRide4.png';
@@ -61,7 +61,7 @@ class AssetImages {
 	static const String review7 = 'assets/images/review7.png';
 	static const String ride = 'assets/images/ride.png';
 	static const String ridewaiting = 'assets/images/ridewaiting.png';
-	static const String searchcab = 'assets/images/searchCab.png';
+	// static const String searchcab = 'assets/images/searchCab.png';
 	static const String searchcircles = 'assets/images/searchCircles.png';
 	static const String searchdriver = 'assets/images/searchDriver.png';
 	static const String send = 'assets/images/send.png';
@@ -72,7 +72,7 @@ class AssetImages {
 	static const String visa = 'assets/images/visa.png';
 	static const String volume = 'assets/images/volume.png';
 	static const String walletbg = 'assets/images/walletBg.png';
-	static const String yellowcar = 'assets/images/yellowCar.png';
+	static const String yellowcar = 'assets/images/truck.jpg';
 	static const String youhere = 'assets/images/youHere.png';
 	static const String bhl = 'assets/images/bhl.png';
 	static const String driver = 'assets/images/driver.png';

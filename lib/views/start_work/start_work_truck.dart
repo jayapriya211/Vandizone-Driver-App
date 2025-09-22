@@ -180,6 +180,14 @@ class _StartWorkTruckViewState extends State<StartWorkTruckView> {
       'startworkLng': longitude,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    await sendCustomerBookingNotification(
+      collection: 'truck_bookings', // 👈 If always truck, change to 'truck_bookings'
+      bookingCode: bookingId,
+      eventType: 'booking_started',
+      title: 'Reached Site',
+      body: 'Captain has reached the site.',
+    );
   }
 
   Future<void> pickAfterWorkImage() async {
@@ -1207,8 +1215,8 @@ class _StartWorkTruckViewState extends State<StartWorkTruckView> {
 
   Widget _buildBeforeLoadingSection() {
     final bool isPhotoUploaded = _startWorkImageUrl != null && _startWorkImageUrl!.isNotEmpty;
-    final double fareAmount = double.tryParse(
-        widget.bookingData?['fare']?.toString() ?? '0'
+    final double cargoValue = double.tryParse(
+        widget.bookingData?['dimensions']?['cargoValue']?.toString() ?? '0'
     ) ?? 0;
     return Card(
       elevation: 2,
@@ -1227,7 +1235,7 @@ class _StartWorkTruckViewState extends State<StartWorkTruckView> {
               keyboardType: TextInputType.number,
             ),
             SizedBox(height: 8),
-            if (fareAmount > 50000)
+            if (cargoValue > 50000)
             _buildLabelWithTextField(
               label: 'E-way Bill Number',
               hintText: 'Enter E-way Bill Number',
@@ -2110,102 +2118,216 @@ class _StartWorkTruckViewState extends State<StartWorkTruckView> {
     );
   }
 
+  // void _showPaymentModeBottomSheet(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     builder: (context) {
+  //       return StatefulBuilder(
+  //         builder: (BuildContext context, StateSetter setState) {
+  //           return Padding(
+  //             padding: const EdgeInsets.all(20.0),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   'Select Payment Mode',
+  //                   style: TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 20),
+  //
+  //                 // Radio buttons for payment modes
+  //                 Column(
+  //                   children: _paymentModes.map((mode) {
+  //                     return RadioListTile<String>(
+  //                       title: Text(mode),
+  //                       value: mode,
+  //                       groupValue: _selectedPaymentMode,
+  //                       onChanged: (String? value) {
+  //                         setState(() {
+  //                           _selectedPaymentMode = value!;
+  //                         });
+  //                       },
+  //                       contentPadding: EdgeInsets.zero,
+  //                     );
+  //                   }).toList(),
+  //                 ),
+  //                 SizedBox(height: 20),
+  //
+  //                 // ⚠️ Show disclaimer if Cash is selected
+  //                 if (_selectedPaymentMode == 'Cash') ...[
+  //                   Text(
+  //                     'Note: Vandizone is not responsible for any money collected as cash.',
+  //                     style: TextStyle(
+  //                       fontSize: 13,
+  //                       color: Colors.grey[600],
+  //                     ),
+  //                   ),
+  //                   SizedBox(height: 12),
+  //                 ],
+  //
+  //                 // Confirm Button
+  //                 ElevatedButton(
+  //                   style: ElevatedButton.styleFrom(
+  //                     backgroundColor: primary,
+  //                     minimumSize: Size(double.infinity, 50),
+  //                   ),
+  //                   onPressed: () async {
+  //                     if (_selectedPaymentMode == 'Cash') {
+  //                       await _handlePaymentAndCommission();
+  //                     } else {
+  //                       Navigator.pop(context);
+  //                       _openRazorpayPayment();
+  //                     }
+  //                   },
+  //                   child: Text(
+  //                     _selectedPaymentMode == 'Cash'
+  //                         ? 'Confirm Payment'
+  //                         : 'Confirm Payment',
+  //                     style: TextStyle(
+  //                       color: Colors.white,
+  //                       fontSize: 16,
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 10),
+  //
+  //                 // Tip field
+  //                 TextField(
+  //                   controller: _tipController,
+  //                   keyboardType:
+  //                   TextInputType.numberWithOptions(decimal: true),
+  //                   decoration: InputDecoration(
+  //                     labelText: 'Optional Tip Amount (₹)',
+  //                     border: OutlineInputBorder(),
+  //                   ),
+  //                 ),
+  //                 SizedBox(height: 16),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
   void _showPaymentModeBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isDismissible: false,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "Has the customer completed the payment?",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+
+              Row(
                 children: [
-                  Text(
-                    'Select Payment Mode',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context, false); // Cancel
+                      },
+                      child: Text("Cancel"),
                     ),
                   ),
-                  SizedBox(height: 20),
-
-                  // Radio buttons for payment modes
-                  Column(
-                    children: _paymentModes.map((mode) {
-                      return RadioListTile<String>(
-                        title: Text(mode),
-                        value: mode,
-                        groupValue: _selectedPaymentMode,
-                        onChanged: (String? value) {
-                          setState(() {
-                            _selectedPaymentMode = value!;
-                          });
-                        },
-                        contentPadding: EdgeInsets.zero,
-                      );
-                    }).toList(),
-                  ),
-                  SizedBox(height: 20),
-
-                  // ⚠️ Show disclaimer if Cash is selected
-                  if (_selectedPaymentMode == 'Cash') ...[
-                    Text(
-                      'Note: Vandizone is not responsible for any money collected as cash.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
                       ),
-                    ),
-                    SizedBox(height: 12),
-                  ],
-
-                  // Confirm Button
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primary,
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                    onPressed: () async {
-                      if (_selectedPaymentMode == 'Cash') {
-                        await _handlePaymentAndCommission();
-                      } else {
-                        Navigator.pop(context);
-                        _openRazorpayPayment();
-                      }
-                    },
-                    child: Text(
-                      _selectedPaymentMode == 'Cash'
-                          ? 'Confirm Payment'
-                          : 'Confirm Payment',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                      onPressed: () {
+                        _updatePaymentStatus();
+                        Navigator.pop(context, true); // Confirm
+                      },
+                      child: Text("Confirm"),
                     ),
                   ),
-                  SizedBox(height: 10),
-
-                  // Tip field
-                  TextField(
-                    controller: _tipController,
-                    keyboardType:
-                    TextInputType.numberWithOptions(decimal: true),
-                    decoration: InputDecoration(
-                      labelText: 'Optional Tip Amount (₹)',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 16),
                 ],
               ),
-            );
-          },
+              SizedBox(height: 10),
+            ],
+          ),
         );
       },
     );
   }
+
+  Future<void> _updatePaymentStatus() async {
+    try {
+      final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+      if (widget.bookingData == null) {
+        throw Exception("Invalid booking data");
+      }
+
+      final bookingId = widget.bookingData?['vehicleDetails']['currentBooking'];
+      if (bookingId == null) {
+        throw Exception("Booking reference not found");
+      }
+
+      final tip = double.tryParse(_tipController.text.trim()) ?? 0.0;
+
+      await firestore.runTransaction((transaction) async {
+        // Update booking
+        final bookingRef = firestore.collection('truck_bookings').doc(bookingId);
+        transaction.update(bookingRef, {
+          'status': 5,
+          // 'tip': tip,
+          // 'paymentStatus': 'paid',
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        // Update truck
+        final truckQuery = await firestore.collection('trucks')
+            .where('currentBooking', isEqualTo: bookingId)
+            .limit(1)
+            .get();
+
+        if (truckQuery.docs.isNotEmpty) {
+          final truckRef = firestore.collection('trucks').doc(truckQuery.docs.first.id);
+          transaction.update(truckRef, {
+            'status': 0,
+            'currentBooking': FieldValue.delete(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      });
+
+      debugPrint('[PAYMENT] Payment completed successfully. Booking: $bookingId');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Payment processed and status updated successfully')),
+      );
+
+      Navigator.pop(context, true); // Close sheet
+      _showRatingDialog(context);
+
+    } catch (e, stackTrace) {
+      debugPrint('[ERROR] Failed to update payment: $e');
+      debugPrint('Stack trace: $stackTrace');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+
 
   Future<void> _handlePaymentAndCommission() async {
     try {

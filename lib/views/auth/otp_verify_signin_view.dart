@@ -98,7 +98,9 @@ class _OwnerOtpVerfiyViewState extends State<OwnerOtpVerfiyView> {
         },
         verificationFailed: (FirebaseAuthException e) {
           setState(() => _isLoading = false);
-          _showErrorSnackbar('Verification failed: ${_getUserFriendlyError(e)}');
+          if (e.code != 'invalid-verification-code') {
+            _showErrorSnackbar('Verification failed: ${_getUserFriendlyError(e)}');
+          }
         },
         codeSent: (String verificationId, int? resendToken) {
           setState(() {
@@ -192,7 +194,9 @@ class _OwnerOtpVerfiyViewState extends State<OwnerOtpVerfiyView> {
     } catch (e) {
       print("❌ OTP verification failed: $e");
       setState(() => _isLoading = false);
-      _showErrorSnackbar('Verification failed: ${_getUserFriendlyError(e)}');
+      if (e != 'invalid-verification-code') {
+        _showErrorSnackbar('Verification failed: ${_getUserFriendlyError(e)}');
+      }
     }
   }
 
@@ -210,8 +214,9 @@ class _OwnerOtpVerfiyViewState extends State<OwnerOtpVerfiyView> {
     } catch (e) {
       print("❌ OTP verification failed: $e");
       setState(() => _isLoading = false);
-      _showErrorSnackbar('Verification failed: ${_getUserFriendlyError(e)}');
-    }
+      if (e != 'invalid-verification-code') {
+        _showErrorSnackbar('Verification failed: ${_getUserFriendlyError(e)}');
+      }    }
   }
 
   String _getUserFriendlyError(dynamic error) {

@@ -240,6 +240,86 @@ class _VehicleFormPageState extends State<VehicleFormPage> {
     return '$prefix$yearSuffix${lastNumber.toString().padLeft(4, '0')}';
   }
 
+  // Future<void> _initiatePayment() async {
+  //   if (_formKey.currentState!.validate() && selectedVehicleType != null) {
+  //     if (selectedVehicleType == 'Truck' && selectedBodyType == null) {
+  //       UiHelper.showSnackBar(context, "Please select body type");
+  //       return;
+  //     }
+  //
+  //     double amount = 0.0;
+  //     String description = '';
+  //
+  //     if (selectedVehicleType == 'Truck') {
+  //       amount = (selectedBodyType!['basePrice'] as num).toDouble();
+  //       description = 'Truck Registration Fee';
+  //     } else if (selectedVehicleType == 'Backhoe Loader') {
+  //       amount = _bhlRegistrationFee ?? 0.0;
+  //       description = 'Backhoe Loader Registration Fee';
+  //     }
+  //
+  //     if (amount <= 0) {
+  //       UiHelper.showSnackBar(context, "Invalid payment amount");
+  //       return;
+  //     }
+  //
+  //     setState(() => _isProcessingPayment = true);
+  //
+  //     try {
+  //       final ownerId = FirebaseAuth.instance.currentUser?.uid;
+  //       if (ownerId == null) throw Exception("Owner not logged in");
+  //
+  //       final ownerDoc = await FirebaseFirestore.instance
+  //           .collection('owners')
+  //           .doc(ownerId)
+  //           .get();
+  //
+  //       if (!ownerDoc.exists) throw Exception("Owner not found");
+  //
+  //       final ownerData = ownerDoc.data();
+  //       final ownerMobile = ownerData?['mobile']?.toString() ?? '';
+  //       final ownerEmail = ownerData?['email']?.toString() ?? '';
+  //
+  //       if (ownerMobile.isEmpty) {
+  //         throw Exception("Owner contact details missing");
+  //       }
+  //
+  //       final settingsQuery = await FirebaseFirestore.instance
+  //           .collection('settings')
+  //           .where('razorpayKeyId', isNotEqualTo: null)
+  //           .limit(1)
+  //           .get();
+  //
+  //       if (settingsQuery.docs.isEmpty) {
+  //         throw Exception('No settings document with Razorpay key found');
+  //       }
+  //
+  //       final razorpayKey = settingsQuery.docs.first.data()['razorpayKeyId'] as String?;
+  //       if (razorpayKey == null || razorpayKey.isEmpty) {
+  //         throw Exception('Razorpay key is empty in settings');
+  //       }
+  //
+  //       final options = {
+  //         'key': razorpayKey,
+  //         'amount': (amount * 100).toInt(), // paise
+  //         'name': 'Vandizone',
+  //         'description': description,
+  //         'prefill': {
+  //           'contact': ownerMobile,
+  //           'email': ownerEmail,
+  //         },
+  //         'theme': {'color': '#00796B'}
+  //       };
+  //
+  //       _razorpay.open(options);
+  //     } catch (e) {
+  //       UiHelper.showSnackBar(context, "Error initiating payment: ${e.toString()}");
+  //     } finally {
+  //       setState(() => _isProcessingPayment = false);
+  //     }
+  //   }
+  // }
+
   Future<void> _initiatePayment() async {
     if (_formKey.currentState!.validate() && selectedVehicleType != null) {
       if (selectedVehicleType == 'Truck' && selectedBodyType == null) {
@@ -250,39 +330,67 @@ class _VehicleFormPageState extends State<VehicleFormPage> {
       double amount = 0.0;
       String description = '';
 
-      if (selectedVehicleType == 'Truck') {
-        amount = (selectedBodyType!['basePrice'] as num).toDouble();
-        description = 'Truck Registration Fee';
-      } else if (selectedVehicleType == 'Backhoe Loader') {
-        amount = _bhlRegistrationFee ?? 0.0;
-        description = 'Backhoe Loader Registration Fee';
-      }
-
-      if (amount <= 0) {
-        UiHelper.showSnackBar(context, "Invalid payment amount");
-        return;
-      }
-
-      setState(() => _isProcessingPayment = true);
-
       try {
+        // 🚩 Get payload (tonnage) entered in TextField
+        final tonnage = double.tryParse(_payloadController.text.trim()) ?? 0.0;
+
+        // 🚩 Get registration fee from Firestore collection
+        final regFeeDoc = await FirebaseFirestore.instance
+            .collection('registrationFeeCharges')
+            .limit(1)
+            .get();
+
+        if (regFeeDoc.docs.isEmpty) {
+          throw Exception("No registration fee charges found");
+        }
+
+        final regData = regFeeDoc.docs.first.data();
+
+        if (selectedVehicleType == 'Truck') {
+          if (tonnage <= 0) {
+            UiHelper.showSnackBar(context, "Please enter valid payload");
+            return;
+          }
+
+          final basePrice = (selectedBodyType!['basePrice'] as num).toDouble();
+
+          // Decide category: HCV, LCV, MCV, trailer, etc.
+          // Suppose you already store selectedCategory when choosing truck type
+          final categoryKey = selectedVehicleCategory;
+          final regFee = (regData[categoryKey] as num?)?.toDouble() ?? 0.0;
+
+          amount = (basePrice * tonnage) + regFee;
+          print("basePrice$basePrice");
+          print("basePrice$tonnage");
+          print("basePrice$regFee");
+          print("basePrice$amount");
+
+          description = "Truck Registration Fee ($selectedVehicleCategory)";
+        } else if (selectedVehicleType == 'Backhoe Loader') {
+          final regFee = (regData['bhl'] as num?)?.toDouble() ?? 0.0;
+          amount = (_bhlRegistrationFee ?? 0.0) + regFee;
+          description = "Backhoe Loader Registration Fee";
+        }
+
+        if (amount <= 0) {
+          UiHelper.showSnackBar(context, "Invalid payment amount");
+          return;
+        }
+
+        setState(() => _isProcessingPayment = true);
+
         final ownerId = FirebaseAuth.instance.currentUser?.uid;
         if (ownerId == null) throw Exception("Owner not logged in");
 
-        final ownerDoc = await FirebaseFirestore.instance
-            .collection('owners')
-            .doc(ownerId)
-            .get();
-
+        final ownerDoc =
+        await FirebaseFirestore.instance.collection('owners').doc(ownerId).get();
         if (!ownerDoc.exists) throw Exception("Owner not found");
 
         final ownerData = ownerDoc.data();
         final ownerMobile = ownerData?['mobile']?.toString() ?? '';
         final ownerEmail = ownerData?['email']?.toString() ?? '';
 
-        if (ownerMobile.isEmpty) {
-          throw Exception("Owner contact details missing");
-        }
+        if (ownerMobile.isEmpty) throw Exception("Owner contact details missing");
 
         final settingsQuery = await FirebaseFirestore.instance
             .collection('settings')
@@ -294,14 +402,15 @@ class _VehicleFormPageState extends State<VehicleFormPage> {
           throw Exception('No settings document with Razorpay key found');
         }
 
-        final razorpayKey = settingsQuery.docs.first.data()['razorpayKeyId'] as String?;
+        final razorpayKey =
+        settingsQuery.docs.first.data()['razorpayKeyId'] as String?;
         if (razorpayKey == null || razorpayKey.isEmpty) {
           throw Exception('Razorpay key is empty in settings');
         }
 
         final options = {
           'key': razorpayKey,
-          'amount': (amount * 100).toInt(), // paise
+          'amount': (amount * 100).toInt(), // in paise
           'name': 'Vandizone',
           'description': description,
           'prefill': {
@@ -319,6 +428,7 @@ class _VehicleFormPageState extends State<VehicleFormPage> {
       }
     }
   }
+
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) async {
     try {
